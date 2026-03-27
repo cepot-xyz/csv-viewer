@@ -422,7 +422,7 @@
                 nulls: 0,
                 dist: {},
                 ling: { sumWords: 0, hiChar: 0, loChar: Infinity },
-                integ: { links: 0, emoRows: 0, symbols: 0 }
+                integ: { links: 0, emoRows: [], symbols: 0 } // emoRows sekarang menyimpan array objek data
             };
 
             const dictionary = new Set();
@@ -452,7 +452,9 @@
 
                 // Integritas Teks
                 if (linkRe.test(msg)) result.integ.links++;
-                if (emoRe.test(msg)) result.integ.emoRows++;
+                if (emoRe.test(msg)) {
+                    result.integ.emoRows.push({ id: i + 1, lbl, msg });
+                }
                 const syms = msg.match(symRe);
                 if (syms) result.integ.symbols += syms.length;
 
@@ -484,7 +486,7 @@
 
             // Integritas
             document.getElementById('urlCount').innerText = res.integ.links;
-            document.getElementById('emojiCount').innerText = res.integ.emoRows;
+            document.getElementById('emojiCount').innerText = res.integ.emoRows.length;
             document.getElementById('specialCharCount').innerText = res.integ.symbols;
 
             // Highlight Hasil Berdasarkan Kondisi
@@ -548,14 +550,16 @@
             if (res.integ.links > 0) {
                 alerts.innerHTML += `<div class="alert-box alert-warning"><strong>Noise Teks (URLs):</strong> Dataset mengandung ${res.integ.links} baris ber-URL. IndoBERT dilatih pada data teks natural, URL sebaiknya dihapus saat preprocessing.</div>`;
             }
-            if (res.integ.emoRows > 0) {
-                alerts.innerHTML += `<div class="alert-box alert-info"><strong>Deteksi Emoji:</strong> Terdapat ${res.integ.emoRows} baris ber-emoji. Pastikan tokenizer Anda dikonfigurasi untuk menangani karakter ini jika diperlukan dalam analisis sentimen.</div>`;
+            if (res.integ.emoRows.length > 0) {
+                const emoLines = res.integ.emoRows.slice(0, 10).map(e => e.id).join(', ');
+                const moreText = res.integ.emoRows.length > 10 ? `... (+${res.integ.emoRows.length - 10} lainnya)` : '';
+                alerts.innerHTML += `<div class="alert-box alert-info"><strong>Deteksi Emoji:</strong> Terdapat ${res.integ.emoRows.length} baris ber-emoji (Baris: ${emoLines}${moreText}). Pastikan tokenizer Anda dikonfigurasi untuk menangani karakter ini jika diperlukan dalam analisis sentimen.</div>`;
             }
             if (health >= 98) {
                 alerts.innerHTML += `<div class="alert-box alert-success"><strong>Dataset Gold-Standard:</strong> Keren cik👍</div>`;
             }
 
-            // Tabel Detail
+            // Tabel Detail Duplikasi
             const tableWrap = document.getElementById('duplicatesContent');
             if (res.dupes.length > 0) {
                 let html = `<table class="duplicates-table"><thead><tr><th>Nomor</th><th>Label</th><th>Cuplikan Komentar</th></tr></thead><tbody>`;
@@ -567,6 +571,41 @@
                 tableWrap.innerHTML = html;
             } else {
                 tableWrap.innerHTML = `<div class="p-20 text-center text-[#333] font-bold uppercase tracking-widest text-xs">Dataset Bersih: Tidak ditemukan data identik</div>`;
+            }
+
+            // Tabel Detail Emoji
+            let emojiSection = document.getElementById('emojiSection');
+            if (!emojiSection) {
+                emojiSection = document.createElement('div');
+                emojiSection.id = 'emojiSection';
+                emojiSection.className = 'report-section mt-8';
+                document.querySelector('.main-content').appendChild(emojiSection);
+            }
+
+            if (res.integ.emoRows.length > 0) {
+                let html = `
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-white font-bold tracking-tight uppercase text-sm">Pratinjau Data Ber-Emoji</h3>
+                        <div class="flex gap-4">
+                            <span class="text-[10px] text-[#444] font-bold uppercase tracking-widest">Analisis Karakter Visual</span>
+                        </div>
+                    </div>
+                    <div class="overflow-hidden rounded-lg border border-[#1f1f1f]">
+                        <div class="overflow-x-auto">
+                            <table class="duplicates-table">
+                                <thead><tr><th>Nomor</th><th>Label</th><th>Cuplikan Komentar</th></tr></thead>
+                                <tbody>
+                `;
+                res.integ.emoRows.slice(0, 20).forEach(e => {
+                    html += `<tr><td class="text-[10px] font-bold text-[#444]">${e.id}</td><td><span class="text-[10px] font-bold text-white px-2 py-1 bg-[#1a1a1a] border border-[#232323] rounded">${e.lbl}</span></td><td class="comment-display">${e.msg}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+                if (res.integ.emoRows.length > 20) html += `<div class="p-4 text-center text-[10px] text-[#444] uppercase tracking-widest font-bold">Menampilkan 20 data awal saja...</div>`;
+                html += `</div></div>`;
+                emojiSection.innerHTML = html;
+                emojiSection.classList.remove('hidden');
+            } else {
+                emojiSection.classList.add('hidden');
             }
         }
     </script>
