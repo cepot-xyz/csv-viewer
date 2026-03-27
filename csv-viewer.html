@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Viewer - NLP Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Figtree', sans-serif;
+            background-color: #0a0a0a;
+            color: #999999;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #232323;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444444;
+        }
+
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 100;
+            border-bottom: 1px solid #1f1f1f;
+            padding: 1rem 2rem;
+            height: 90px;
+            display: flex;
+            align-items: center;
+        }
+
+        .main-content {
+            margin-top: 90px;
+            padding: 2rem;
+        }
+
+        .table-container {
+            border: 1px solid #1f1f1f;
+            border-radius: 12px;
+            background-color: #0c0c0c;
+            width: 100%;
+            overflow-x: auto;
+            max-height: calc(100vh - 180px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background-color: #1a1a1a;
+            z-index: 50;
+            box-shadow: inset 0 -1px 0 #1f1f1f;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 1.25rem 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        tr {
+            border-bottom: 1px solid #151515;
+            transition: background-color 0.1s;
+        }
+
+        tr:last-child {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #121212;
+        }
+
+        td {
+            padding: 1.25rem 1rem;
+            color: #999999;
+            white-space: nowrap;
+            font-size: 0.875rem;
+        }
+
+        .search-input {
+            background-color: #1a1a1a;
+            border: 1px solid #232323;
+            color: #ffffff;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: #444444;
+        }
+
+        .btn-upload {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #333333;
+            transition: all 0.2s;
+            white-space: nowrap;
+            font-weight: 700;
+        }
+
+        .btn-upload:hover {
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        #dropzone {
+            background-color: #111111;
+            border: 2px dashed #1f1f1f;
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        #dropzone:hover {
+            border-color: #ffffff;
+            background-color: #151515;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="fixed-header">
+        <div class="w-full flex items-center justify-between gap-4">
+            <a href="index.html" class="flex items-center gap-2 text-[#666666] hover:text-white transition-colors">
+                <span class="text-xl">&larr;</span>
+                <span class="font-medium text-sm">Kembali</span>
+            </a>
+            <div class="overflow-hidden mr-auto ml-6">
+                <h1 id="pageTitle" class="text-lg font-bold text-white tracking-tight">CSV Viewer</h1>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <input type="text" id="searchInput" placeholder="Cari data..." class="search-input px-4 py-2 rounded-lg text-sm w-40 md:w-64">
+                
+                <label class="cursor-pointer btn-upload px-6 py-2.5 rounded-lg text-xs uppercase tracking-wider">
+                    Pilih File
+                    <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <label id="dropzone" for="csvFileInput" class="flex flex-col items-center justify-center min-h-[400px] cursor-pointer">
+            <h2 class="text-xl font-bold text-white mb-2 underline underline-offset-8 decoration-white/20 uppercase tracking-widest">Pilih File CSV</h2>
+            <p class="text-[#444444] text-xs font-medium uppercase tracking-widest mt-2">Klik atau tarik file ke area ini</p>
+        </label>
+
+        <div id="tableWrapper" class="hidden">
+            <div class="table-container">
+                <table id="csvTable" class="text-left">
+                    <thead>
+                        <tr id="tableHeader"></tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            <div class="mt-4 text-[10px] text-[#444] font-bold uppercase tracking-widest flex justify-between items-center px-2 pb-8">
+                <span id="rowCount">0 Baris</span>
+                <span id="searchStatus" class="text-white"></span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const fileInput = document.getElementById('csvFileInput');
+        const searchInput = document.getElementById('searchInput');
+        const tableWrapper = document.getElementById('tableWrapper');
+        const dropzone = document.getElementById('dropzone');
+        const tableHeader = document.getElementById('tableHeader');
+        const tableBody = document.getElementById('tableBody');
+        const rowCountText = document.getElementById('rowCount');
+        const searchStatus = document.getElementById('searchStatus');
+        const pageTitle = document.getElementById('pageTitle');
+
+        let originalRows = []; 
+        let currentHeaders = [];
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Itu bukan file CSV!');
+                fileInput.value = '';
+                return;
+            }
+
+            dropzone.classList.add('hidden');
+            tableWrapper.classList.remove('hidden');
+            pageTitle.innerText = file.name.toUpperCase();
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                processData(event.target.result);
+            };
+            reader.readAsText(file);
+        });
+
+        searchInput.addEventListener('input', function(e) {
+            filterTable(e.target.value.toLowerCase());
+        });
+
+        function parseCSVRow(row) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else current += char;
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        function processData(csvData) {
+            const allRows = csvData.split(/\r?\n/).map(r => r.trim()).filter(row => row !== '');
+            if (allRows.length === 0) return;
+
+            tableHeader.innerHTML = '';
+            tableBody.innerHTML = '';
+
+            let thNumber = document.createElement('th');
+            thNumber.innerText = 'No';
+            thNumber.style.width = '60px';
+            tableHeader.appendChild(thNumber);
+
+            currentHeaders = parseCSVRow(allRows[0]);
+            currentHeaders.forEach(header => {
+                const th = document.createElement('th');
+                th.innerText = header;
+                tableHeader.appendChild(th);
+            });
+
+            originalRows = allRows.slice(1).map((row, idx) => ({
+                data: row,
+                originalIndex: idx + 1
+            }));
+            renderTableRows(originalRows, currentHeaders);
+            
+            rowCountText.innerText = `${originalRows.length} Baris total`;
+            searchInput.value = ''; 
+            searchStatus.innerText = '';
+        }
+
+        function renderTableRows(dataItems, headers) {
+            tableBody.innerHTML = '';
+            dataItems.forEach((item) => {
+                const cells = parseCSVRow(item.data);
+                if (cells.length < headers.length) return;
+
+                const tr = document.createElement('tr');
+                let rowHtml = `<td style="color: #666; font-weight: 500;">${item.originalIndex}</td>`;
+
+                cells.forEach((cell, cellIdx) => {
+                    let display = cell;
+                    if (cellIdx === 0) display = `<span class="text-white font-semibold">${cell}</span>`;
+                    rowHtml += `<td>${display}</td>`;
+                });
+
+                tr.innerHTML = rowHtml;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function filterTable(term) {
+            if (!originalRows.length) return;
+            const filtered = originalRows.filter(item => item.data.toLowerCase().includes(term));
+            renderTableRows(filtered, currentHeaders);
+            searchStatus.innerText = term ? `Ditemukan ${filtered.length} hasil` : '';
+        }
+    </script>
+</body>
+</html>

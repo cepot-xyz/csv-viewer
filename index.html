@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV Viewer - Minimalist Fixed Header</title>
+    <title>NLP Data Tools Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
         
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Figtree', sans-serif;
             background-color: #111111;
             color: #999999;
             margin: 0;
             padding: 0;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -32,297 +31,222 @@
             background: #999999;
         }
 
-        /* Navbar Fixed Style */
-        .fixed-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #111111;
-            z-index: 100;
+        .header {
+            padding: 3rem 2rem;
+            text-align: center;
             border-bottom: 1px solid #232323;
-            padding: 1rem 2rem;
-            height: 90px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: #666666;
+            margin: 0;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .tool-card {
+            background-color: #1a1a1a;
+            border: 1px solid #232323;
+            border-radius: 12px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tool-card:hover {
+            background-color: #222222;
+            border-color: #444444;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .tool-icon {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(99, 102, 241, 0.1);
+            border-radius: 8px;
             display: flex;
             align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
         }
 
-        /* Container Konten Utama */
-        .main-content {
-            margin-top: 90px;
-            padding: 2rem;
+        .tool-card.csv-viewer .tool-icon {
+            background-color: rgba(99, 102, 241, 0.1);
         }
 
-        .table-container {
-            border: 1px solid #232323;
-            border-radius: 8px;
-            background-color: #111111;
-            width: 100%;
-            overflow-x: auto;
-            max-height: calc(100vh - 180px); /* Batasi tinggi agar scroll internal */
+        .tool-card.validator .tool-icon {
+            background-color: rgba(99, 102, 241, 0.1);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: auto; 
-        }
-
-        /* Sticky Table Header */
-        thead th {
-            position: sticky;
-            top: 0;
-            background-color: #1a1a1a;
-            z-index: 50;
-            box-shadow: inset 0 -1px 0 #232323;
-        }
-
-        tr {
-            border-bottom: 1px solid #232323;
-            transition: background-color 0.1s;
-        }
-
-        tr:last-child {
-            border-bottom: none;
-        }
-
-        tr:hover {
-            background-color: #1a1a1a;
-        }
-
-        th {
+        .tool-name {
+            font-size: 1.25rem;
+            font-weight: 700;
             color: #ffffff;
-            font-weight: 600;
-            font-size: 0.875rem;
-            padding: 1rem;
-            white-space: nowrap;
-            text-transform: capitalize;
+            margin: 0 0 0.75rem 0;
         }
 
-        td {
-            padding: 1rem;
-            color: #cccccc;
-            white-space: nowrap;
-            font-size: 0.875rem;
+        .tool-description {
+            font-size: 0.9rem;
+            color: #999999;
+            margin: 0 0 1.5rem 0;
+            flex-grow: 1;
+            line-height: 1.6;
         }
 
-        /* Status badges */
-        .status-paid {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            padding: 2px 10px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .tool-features {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+            font-size: 0.85rem;
         }
 
-        .status-unpaid {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            padding: 2px 10px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        .tool-features li {
+            color: #666666;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
         }
 
-        .search-input {
-            background-color: #1a1a1a;
-            border: 1px solid #232323;
-            color: #ffffff;
-            outline: none;
-            transition: border-color 0.3s;
+        .tool-features li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #444444;
         }
 
-        .search-input:focus {
-            border-color: #444444;
-        }
-
-        .btn-upload {
+        .open-button {
             background-color: #232323;
             color: #ffffff;
             border: 1px solid #444444;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
             transition: all 0.2s;
-            white-space: nowrap;
+            margin-top: auto;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .btn-upload:hover {
+        .open-button:hover {
             background-color: #ffffff;
             color: #111111;
         }
 
-        /* Dropzone Styling */
-        #dropzone:hover {
-            background-color: rgba(35, 35, 35, 0.4);
-            border-color: #444444;
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #232323;
+            color: #666666;
+            font-size: 0.85rem;
+        }
+
+        .featured-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #999999;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <!-- Fixed Navbar -->
-    <header class="fixed-header">
-        <div class="w-full flex items-center justify-between gap-4">
-            <div class="overflow-hidden">
-                <h1 id="pageTitle" class="text-lg font-bold text-white truncate">CSV Viewer</h1>
-                <p id="fileDescription" class="text-[#999999] text-xs font-mono truncate italic">Silakan pilih file CSV</p>
-            </div>
-            
-            <div class="flex items-center gap-3">
-                <input type="text" id="searchInput" placeholder="Cari data..." class="search-input px-4 py-2 rounded-lg text-sm w-40 md:w-64">
-                
-                <label class="cursor-pointer btn-upload px-5 py-2 rounded-lg font-medium text-sm">
-                    Pilih File
-                    <input type="file" id="csvFileInput" accept=".csv" class="hidden">
-                </label>
-            </div>
-        </div>
+    <!-- Header -->
+    <header class="header">
+        <h1>NLP Data Tools</h1>
+        <p>Tools sederhana untuk membantu persiapan data machine learning Anda</p>
     </header>
 
-    <!-- Konten Utama -->
+    <!-- Main Content -->
     <main class="main-content">
-        <!-- Dropzone (Hanya muncul jika belum ada file) -->
-        <label id="dropzone" for="csvFileInput" class="flex flex-col items-center justify-center min-h-[400px] cursor-pointer bg-[#232323]/20 rounded-xl border-2 border-dashed border-[#232323] transition-all duration-300">
-            <p class="text-[#999999] text-center px-4">
-                <span class="font-semibold block mb-1 text-white text-lg">Klik di sini untuk mengunggah file CSV</span>
-                <span class="text-xs italic opacity-60">Semua proses dilakukan secara lokal di browser Anda</span>
-            </p>
-        </label>
+        <!-- Featured Section Label -->
+        <span class="section-label">Tools Tersedia</span>
 
-        <!-- Table Section -->
-        <div id="tableWrapper" class="hidden">
-            <div class="table-container">
-                <table id="csvTable" class="text-left">
-                    <thead>
-                        <tr id="tableHeader">
-                            <!-- Headers dimuat di sini -->
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <!-- Baris data dimuat di sini -->
-                    </tbody>
-                </table>
+        <!-- Tools Grid -->
+        <div class="grid-container">
+            <!-- CSV Viewer Card -->
+            <div class="tool-card csv-viewer">
+                <div class="tool-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1;">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
+                        <path d="M3 9h18"></path>
+                        <path d="M3 15h18"></path>
+                        <path d="M9 3v18"></path>
+                        <path d="M15 3v18"></path>
+                    </svg>
+                </div>
+                <h2 class="tool-name">CSV Viewer</h2>
+                <p class="tool-description">Lihat dan cari data dalam file CSV dengan interface yang clean dan intuitif. Lengkap dengan penomoran baris untuk memudahkan tracking.</p>
+                <ul class="tool-features">
+                    <li>Preview data CSV dengan penomoran</li>
+                    <li>Fitur pencarian real-time</li>
+                    <li>Scroll horizontal & vertical</li>
+                    <li>Nomor baris asli tetap konsisten saat filter</li>
+                </ul>
+                <button class="open-button" onclick="openTool('csv-viewer.html')">Buka Tool</button>
             </div>
-            <div class="mt-4 text-xs text-[#999999] flex justify-between items-center px-2 pb-8">
-                <span id="rowCount">0 Baris</span>
-                <span id="searchStatus" class="italic text-white-400"></span>
+
+            <!-- Data Validator Card -->
+            <div class="tool-card validator">
+                <div class="tool-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #10b981;">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2 class="tool-name">Data Validator</h2>
+                <p class="tool-description">Analisis dataset tingkat lanjut. Deteksi duplikat, statistik kebahasaan (word count), integritas karakter (URL/Emoji), dan visualisasi sebaran label.</p>
+                <ul class="tool-features">
+                    <li>Statistik Kebahasaan (Words count)</li>
+                    <li>Integritas (Deteksi URL & Emoji)</li>
+                    <li>Visualisasi Sebaran Label Detail</li>
+                    <li>Laporan Health Score Dataset</li>
+                </ul>
+                <button class="open-button" onclick="openTool('data-validator.html')">Buka Tool</button>
             </div>
         </div>
     </main>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <p>NLP Sentiment Analysis Project | Data Preparation Tools | 2026</p>
+    </footer>
+
     <script>
-        const fileInput = document.getElementById('csvFileInput');
-        const searchInput = document.getElementById('searchInput');
-        const tableWrapper = document.getElementById('tableWrapper');
-        const dropzone = document.getElementById('dropzone');
-        const tableHeader = document.getElementById('tableHeader');
-        const tableBody = document.getElementById('tableBody');
-        const rowCountText = document.getElementById('rowCount');
-        const searchStatus = document.getElementById('searchStatus');
-        const pageTitle = document.getElementById('pageTitle');
-        const fileDescription = document.getElementById('fileDescription');
-
-        let originalRows = []; 
-        let currentHeaders = [];
-
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Sembunyikan dropzone segera setelah file dipilih
-            dropzone.classList.add('hidden');
-            tableWrapper.classList.remove('hidden');
-
-            pageTitle.innerText = file.name;
-            fileDescription.innerText = `Lokal: ${file.name}`;
-            fileDescription.classList.remove('italic');
-            fileDescription.style.color = '#999999'; 
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                processData(event.target.result);
-            };
-            reader.readAsText(file);
-        });
-
-        searchInput.addEventListener('input', function(e) {
-            filterTable(e.target.value.toLowerCase());
-        });
-
-        function processData(csvData) {
-            const allRows = csvData.split(/\r?\n/).map(r => r.trim()).filter(row => row !== '');
-            if (allRows.length === 0) return;
-
-            tableHeader.innerHTML = '';
-            tableBody.innerHTML = '';
-
-            currentHeaders = parseCSVRow(allRows[0]);
-            currentHeaders.forEach(header => {
-                const th = document.createElement('th');
-                th.innerText = header;
-                tableHeader.appendChild(th);
-            });
-
-            originalRows = allRows.slice(1);
-            renderTableRows(originalRows, currentHeaders);
-            
-            rowCountText.innerText = `${originalRows.length} Baris total`;
-            searchInput.value = ''; 
-            searchStatus.innerText = '';
-        }
-
-        function renderTableRows(dataStrings, headers) {
-            tableBody.innerHTML = '';
-            
-            dataStrings.forEach(rowString => {
-                const cells = parseCSVRow(rowString);
-                if (cells.length < headers.length) return;
-
-                const tr = document.createElement('tr');
-                let rowHtml = '';
-
-                cells.forEach((cell, index) => {
-                    const headerName = headers[index].toLowerCase();
-                    let displayContent = cell;
-                    
-                    // Deteksi status
-                    if (headerName.includes('status')) {
-                        const s = cell.toLowerCase();
-                        if (s === 'paid') displayContent = `<span class="status-paid">${cell}</span>`;
-                        else if (s === 'unpaid') displayContent = `<span class="status-unpaid">${cell}</span>`;
-                    }
-
-                    // Bold kolom pertama
-                    if (index === 0) displayContent = `<span class="text-white font-semibold">${cell}</span>`;
-
-                    rowHtml += `<td>${displayContent}</td>`;
-                });
-
-                tr.innerHTML = rowHtml;
-                tableBody.appendChild(tr);
-            });
-        }
-
-        function filterTable(term) {
-            if (!originalRows.length) return;
-            const filtered = originalRows.filter(row => row.toLowerCase().includes(term));
-            renderTableRows(filtered, currentHeaders);
-            searchStatus.innerText = term ? `Ditemukan ${filtered.length} hasil` : '';
-        }
-
-        function parseCSVRow(row) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < row.length; i++) {
-                const char = row[i];
-                if (char === '"') inQuotes = !inQuotes;
-                else if (char === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else current += char;
-            }
-            result.push(current.trim());
-            return result;
+        function openTool(filename) {
+            window.location.href = filename;
         }
     </script>
 </body>

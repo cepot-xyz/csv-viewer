@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validator Dataset - NLP Tools</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Figtree', sans-serif;
+            background-color: #0c0c0c;
+            color: #999999;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0c0c0c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #232323;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444444;
+        }
+
+        .glass-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(12, 12, 12, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 100;
+            border-bottom: 1px solid #1f1f1f;
+            padding: 1rem 2rem;
+            height: 90px;
+            display: flex;
+            align-items: center;
+        }
+
+        .main-content {
+            margin-top: 110px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-upload {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            border: 1px solid #333333;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-weight: 700;
+        }
+
+        .btn-upload:hover {
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        .dropzone {
+            border: 2px dashed #1f1f1f;
+            border-radius: 20px;
+            padding: 5rem 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #111111;
+        }
+
+        .dropzone:hover {
+            border-color: #ffffff;
+            background-color: #151515;
+        }
+
+        .report-section {
+            background-color: #111111;
+            border: 1px solid #1f1f1f;
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Status Large Card */
+        .status-hero {
+            background-color: #111111;
+            border: 1px solid #1f1f1f;
+            border-radius: 12px;
+            padding: 2.5rem 2.5rem;
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            transition: border-color 0.3s;
+        }
+
+        .stat-card {
+            background-color: #111111;
+            border: 1px solid #1f1f1f;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            background-color: #151515;
+            border-color: #333333;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.04em;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 700;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: #1f1f1f;
+            border-radius: 3px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #ffffff;
+            border-radius: 3px;
+            transition: width 1s ease-out;
+        }
+
+        .integrity-tag {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background-color: #0c0c0c;
+            border: 1px solid #1f1f1f;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .integrity-label { color: #666666; }
+        .integrity-value { color: #ffffff; font-weight: 700; }
+
+        .duplicates-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .duplicates-table th {
+            text-align: left;
+            padding: 1.25rem 1rem;
+            color: #ffffff;
+            border-bottom: 1px solid #1f1f1f;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .duplicates-table tr:hover {
+            background-color: #151515;
+        }
+
+        .duplicates-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid #1a1a1a;
+            color: #999999;
+            font-size: 0.875rem;
+        }
+
+        .comment-display {
+            max-width: 600px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #aaaaaa;
+        }
+
+        .alert-box {
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid transparent;
+        }
+
+        .alert-info { background: #111111; border-color: #3b82f6; color: #ffffff; }
+        .alert-success { background: #111111; border-color: #10b981; color: #ffffff; }
+        .alert-error { background: #111111; border-color: #ef4444; color: #ffffff; }
+        .alert-warning { background: #111111; border-color: #f59e0b; color: #ffffff; }
+
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="glass-header">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="index.html" class="flex items-center gap-2 text-[#666666] hover:text-white transition-colors">
+                    <span class="text-xl">&larr;</span>
+                    <span class="font-medium text-sm">Kembali</span>
+                </a>
+                <div class="h-6 w-[1px] bg-[#1f1f1f]"></div>
+                <div>
+                    <h1 id="pageTitle" class="text-lg font-bold text-white tracking-tight">Validator Dataset</h1>
+                </div>
+            </div>
+            
+            <label class="cursor-pointer btn-upload px-6 py-2.5 rounded-lg text-xs uppercase tracking-wider">
+                Pilih File CSV
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+            </label>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Area Unggah -->
+        <label id="dropzone" for="csvFileInput" class="dropzone flex flex-col items-center justify-center min-h-[400px]">
+            <h2 class="text-xl font-bold text-white mb-2 underline underline-offset-8 decoration-white/20 uppercase tracking-widest">Unggah File CSV</h2>
+            <p class="text-[#444444] text-xs font-medium uppercase tracking-widest mt-2">Analisis Kualitas Dataset Riset Anda</p>
+        </label>
+
+        <!-- Hasil Diagnostik -->
+        <div id="reportWrapper" class="hidden">
+            
+            <!-- Ringkasan Status Validasi (Highlight) -->
+            <div class="status-hero" id="statusHero">
+                <div class="flex flex-col">
+                    <span class="stat-label mb-2">HASIL DIAGNOSTIK DATASET</span>
+                    <div class="flex items-center gap-4">
+                        <span id="validationMessage" class="text-3xl font-bold text-white tracking-tight">Memproses hasil...</span>
+                        <div id="statusIndicator" class="w-3.5 h-3.5 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid Statistik Utama (4 Kolom) -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="stat-card">
+                    <p class="stat-label">Total Baris</p>
+                    <p class="stat-value" id="totalRows">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Data Duplikat</p>
+                    <p class="stat-value" id="duplicateCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Baris Kosong</p>
+                    <p class="stat-value" id="missingCount">0</p>
+                </div>
+                <div class="stat-card">
+                    <p class="stat-label">Skor Kesehatan</p>
+                    <p class="stat-value" id="healthScore">0%</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Bagian Kiri (Linguistik & Integritas) -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Statistik Kebahasaan -->
+                    <div class="report-section">
+                        <h3 class="stat-label mb-6 flex items-center gap-3">
+                            <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            STATISTIK KEBAHASAAN
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="integrity-tag">
+                                <span class="integrity-label">Rata-rata Kata</span>
+                                <span class="integrity-value" id="avgWords">0</span>
+                            </div>
+                            <div class="integrity-tag">
+                                <span class="integrity-label">Karakter Terpanjang</span>
+                                <span class="integrity-value" id="maxChars">0</span>
+                            </div>
+                            <div class="integrity-tag">
+                                <span class="integrity-label">Karakter Terpendek</span>
+                                <span class="integrity-value" id="minChars">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dasbor Integritas DATA -->
+                    <div class="report-section">
+                        <h3 class="stat-label mb-6 flex items-center gap-3">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                            INTEGRITAS DATA
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="integrity-tag">
+                                <span class="integrity-label">Pendeteksi URL</span>
+                                <span class="integrity-value" id="urlCount">0</span>
+                            </div>
+                            <div class="integrity-tag">
+                                <span class="integrity-label">Baris Mengandung Emoji</span>
+                                <span class="integrity-value" id="emojiCount">0</span>
+                            </div>
+                            <div class="integrity-tag">
+                                <span class="integrity-label">Total Karakter Spesial</span>
+                                <span class="integrity-value" id="specialCharCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian Kanan (Sebaran & Catatan) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Visual Sebaran Label -->
+                    <div class="report-section">
+                        <h3 class="stat-label mb-8 flex items-center gap-3">
+                            <span class="w-1.5 h-1.5 bg-sky-500 rounded-full"></span>
+                            SEBARAN LABEL DATASET (IndoBERT Ready)
+                        </h3>
+                        <div id="visualDistributionSpace" class="space-y-8">
+                            <!-- Visual content diisi oleh JS -->
+                        </div>
+                    </div>
+
+                    <!-- Catatan Validasi (Alert Area) -->
+                    <div class="report-section">
+                        <h3 class="stat-label mb-4">Catatan Dataset</h3>
+                        <div id="alertsContainer" class="space-y-px">
+                            <!-- Pesan alert dimuat di sini -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Detail Duplikasi (Jika ada) -->
+            <div class="report-section mt-8" id="duplicatesSection">
+                <div class="flex items-center justify-between mb-8">
+                    <h3 class="text-white font-bold tracking-tight uppercase text-sm">Pratinjau Data Terduplikat</h3>
+                    <div class="flex gap-4">
+                        <span class="text-[10px] text-[#444] font-bold uppercase tracking-widest">Sistem Audit Lokal</span>
+                    </div>
+                </div>
+                <div class="overflow-hidden rounded-lg border border-[#1f1f1f]">
+                    <div id="duplicatesContent" class="overflow-x-auto">
+                        <!-- Konten tabel diisi oleh JS -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const fileInput = document.getElementById('csvFileInput');
+        const dropzone = document.getElementById('dropzone');
+        const reportWrapper = document.getElementById('reportWrapper');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Itu bukan file CSV!');
+                fileInput.value = '';
+                return;
+            }
+
+            document.getElementById('pageTitle').innerText = file.name.toUpperCase();
+            const reader = new FileReader();
+            reader.onload = (event) => runAnalysis(event.target.result);
+            reader.readAsText(file);
+        });
+
+        function parseRawCSV(text) {
+            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+            return lines.map(line => {
+                const parts = [];
+                let midQuote = false;
+                let buffer = '';
+                for (let i = 0; i < line.length; i++) {
+                    const c = line[i];
+                    if (c === '"') midQuote = !midQuote;
+                    else if (c === ',' && !midQuote) {
+                        parts.push(buffer.trim());
+                        buffer = '';
+                    } else buffer += c;
+                }
+                parts.push(buffer.trim());
+                return parts;
+            });
+        }
+
+        function runAnalysis(rawContent) {
+            const dataset = parseRawCSV(rawContent);
+            if (dataset.length < 1) return;
+            const entries = dataset.slice(1);
+
+            const result = {
+                len: entries.length,
+                dupes: [],
+                nulls: 0,
+                dist: {},
+                ling: { sumWords: 0, hiChar: 0, loChar: Infinity },
+                integ: { links: 0, emoRows: 0, symbols: 0 }
+            };
+
+            const dictionary = new Set();
+            const emoRe = /\p{Extended_Pictographic}/u;
+            const linkRe = /(http|https):\/\/[^\s]+/;
+            const symRe = /[^a-zA-Z0-9\s.,!?]/g;
+
+            entries.forEach((row, i) => {
+                const lbl = row[0] || "NULL";
+                const msg = row[1] || "";
+
+                if (msg === "" || lbl === "NULL") result.nulls++;
+
+                // Cek Duplikat
+                const key = row.join('|');
+                if (dictionary.has(key)) {
+                    result.dupes.push({ id: i + 1, lbl, msg });
+                } else {
+                    dictionary.add(key);
+                }
+
+                // Analisis Bahasa
+                const wordCount = msg.split(/\s+/).filter(w => w.length > 0).length;
+                result.ling.sumWords += wordCount;
+                result.ling.hiChar = Math.max(result.ling.hiChar, msg.length);
+                result.ling.loChar = Math.min(result.ling.loChar, msg.length);
+
+                // Integritas Teks
+                if (linkRe.test(msg)) result.integ.links++;
+                if (emoRe.test(msg)) result.integ.emoRows++;
+                const syms = msg.match(symRe);
+                if (syms) result.integ.symbols += syms.length;
+
+                // Hitung Label
+                result.dist[lbl] = (result.dist[lbl] || 0) + 1;
+            });
+
+            if (result.ling.loChar === Infinity) result.ling.loChar = 0;
+            renderView(result);
+        }
+
+        function renderView(res) {
+            dropzone.classList.add('hidden');
+            reportWrapper.classList.remove('hidden');
+
+            // Nilai Dasar
+            document.getElementById('totalRows').innerText = res.len;
+            document.getElementById('duplicateCount').innerText = res.dupes.length;
+            document.getElementById('missingCount').innerText = res.nulls;
+            
+            // Perhitungan Kesehatan
+            const health = Math.max(0, Math.round(100 - (res.dupes.length/res.len * 50 + res.nulls/res.len * 50)));
+            document.getElementById('healthScore').innerText = health + '%';
+
+            // Linguistik
+            document.getElementById('avgWords').innerText = (res.ling.sumWords / res.len).toFixed(1);
+            document.getElementById('maxChars').innerText = res.ling.hiChar;
+            document.getElementById('minChars').innerText = res.ling.loChar;
+
+            // Integritas
+            document.getElementById('urlCount').innerText = res.integ.links;
+            document.getElementById('emojiCount').innerText = res.integ.emoRows;
+            document.getElementById('specialCharCount').innerText = res.integ.symbols;
+
+            // Highlight Hasil Berdasarkan Kondisi
+            const hero = document.getElementById('statusHero');
+            const msg = document.getElementById('validationMessage');
+            const indicator = document.getElementById('statusIndicator');
+
+            if (res.dupes.length === 0 && res.nulls === 0) {
+                hero.style.borderColor = '#10b981';
+                msg.innerText = 'DATASET BERSIH & SIAP';
+                indicator.className = 'w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] animate-pulse';
+            } else if (res.dupes.length < (res.len * 0.05)) {
+                hero.style.borderColor = '#f59e0b';
+                msg.innerText = 'DATA MASIH AMAN (PERLU BERSIHKAN)';
+                indicator.className = 'w-3.5 h-3.5 rounded-full bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.4)] animate-pulse';
+            } else {
+                hero.style.borderColor = '#ef4444';
+                msg.innerText = 'DATASET BERMASALAH (KRITIS)';
+                indicator.className = 'w-3.5 h-3.5 rounded-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.4)] animate-pulse';
+            }
+
+            // Visual Sebaran Label
+            const space = document.getElementById('visualDistributionSpace');
+            space.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    ${Object.entries(res.dist).map(([tag, val]) => {
+                        const ratio = ((val / res.len) * 100).toFixed(1);
+                        return `
+                            <div class="stat-card flex flex-col items-center justify-center py-8">
+                                <span class="text-[10px] text-[#666] font-bold uppercase tracking-widest mb-2">KELAS: ${tag}</span>
+                                <span class="text-3xl font-bold text-white mb-1">${val}</span>
+                                <span class="text-[11px] text-[#444] font-medium">${ratio}% dari total dataset</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div class="space-y-6 pt-6 border-t border-[#1a1a1a]">
+                    ${Object.entries(res.dist).map(([tag, val]) => {
+                        const ratio = ((val / res.len) * 100).toFixed(1);
+                        return `
+                            <div>
+                                <div class="flex justify-between items-baseline mb-2">
+                                    <span class="text-[10px] text-[#666] font-bold uppercase tracking-wider">Presentase Kelas ${tag}</span>
+                                    <span class="text-xs text-white font-bold">${ratio}%</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar" style="width: ${ratio}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            // Alerts
+            const alerts = document.getElementById('alertsContainer');
+            alerts.innerHTML = '';
+            if (res.dupes.length > 0) {
+                alerts.innerHTML += `<div class="alert-box alert-error"><strong>Duplikasi Terdeteksi:</strong> Terdapat ${res.dupes.length} baris identik. Hal ini dapat memicu <em>overfitting</em> pada model IndoBERT Anda. Segera hapus sebelum training.</div>`;
+            }
+            if (res.integ.links > 0) {
+                alerts.innerHTML += `<div class="alert-box alert-warning"><strong>Noise Teks (URLs):</strong> Dataset mengandung ${res.integ.links} baris ber-URL. IndoBERT dilatih pada data teks natural, URL sebaiknya dihapus saat preprocessing.</div>`;
+            }
+            if (res.integ.emoRows > 0) {
+                alerts.innerHTML += `<div class="alert-box alert-info"><strong>Deteksi Emoji:</strong> Terdapat ${res.integ.emoRows} baris ber-emoji. Pastikan tokenizer Anda dikonfigurasi untuk menangani karakter ini jika diperlukan dalam analisis sentimen.</div>`;
+            }
+            if (health >= 98) {
+                alerts.innerHTML += `<div class="alert-box alert-success"><strong>Dataset Gold-Standard:</strong> Keren cik👍</div>`;
+            }
+
+            // Tabel Detail
+            const tableWrap = document.getElementById('duplicatesContent');
+            if (res.dupes.length > 0) {
+                let html = `<table class="duplicates-table"><thead><tr><th>Nomor</th><th>Label</th><th>Cuplikan Komentar</th></tr></thead><tbody>`;
+                res.dupes.slice(0, 40).forEach(d => {
+                    html += `<tr><td class="text-[10px] font-bold text-[#444]">${d.id}</td><td><span class="text-[10px] font-bold text-white px-2 py-1 bg-[#1a1a1a] border border-[#232323] rounded">${d.lbl}</span></td><td class="comment-display">${d.msg}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+                if (res.dupes.length > 40) html += `<div class="p-4 text-center text-[10px] text-[#444] uppercase tracking-widest font-bold">Menampilkan 40 data awal saja...</div>`;
+                tableWrap.innerHTML = html;
+            } else {
+                tableWrap.innerHTML = `<div class="p-20 text-center text-[#333] font-bold uppercase tracking-widest text-xs">Dataset Bersih: Tidak ditemukan data identik</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
